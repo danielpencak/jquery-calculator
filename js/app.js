@@ -1,9 +1,11 @@
 (function() {
   'use strict';
   const $screen = $('#screen');
+
   $('.buttons').on('click', '.operator', (event) => {
     const $target = $(event.target);
     const $text = $target.text();
+
     if ($text === '=') {
       return;
     }
@@ -11,51 +13,57 @@
   });
   $('.buttons').on('click', (event) => {
     const $target = $(event.target);
+
     if (!isNaN($target.text())) {
       const $text = $target.text();
+
       $screen.append($text);
     }
   });
-  $('.buttons').on('click', '#clear', (event) => {
+  $('.buttons').on('click', '#clear', () => {
     $screen.text('');
   });
-  $('.buttons').on('click', '#equals', (event) => {
-    const regEx = /(-?\d+.?\d*)(\+|\-|\X|\÷)(-?\d+.?\d*)/;
+
+  const evaluate = function(operand1, operand2, operator) {
+    if (operator === '÷' && operand2 === 0) {
+      $screen.text('Error');
+
+      return;
+    }
+    if (operator === '+') {
+      $screen.text(operand1 + operand2);
+    }
+    if (operator === '-') {
+      $screen.text(operand1 - operand2);
+    }
+    if (operator === '÷') {
+      $screen.text((operand1 / operand2));
+    }
+    if (operator === 'x') {
+      $screen.text(operand1 * operand2);
+    }
+  };
+
+  $('.buttons').on('click', '#equals', () => {
+    const regEx = /(-?\d+.?\d*)(\+|-|x|÷)(-?\d+.?\d*)/;
     const screenTextArray = ($screen.text()).match(regEx);
     const extraOp = screenTextArray[1].slice(-1);
     const extraOp2 = screenTextArray[3].slice(-1);
-    const operatorDiv = screenTextArray[2];
-    const operandZero = screenTextArray[3];
-    if (extraOp === '-'| extraOp === 'X'| extraOp === '÷'| extraOp === '+') {
-      $screen.text('');
+    const operatorSymbol = screenTextArray[2];
+    const firstOperand = parseFloat(screenTextArray[1]);
+    const secondOperand = parseFloat(screenTextArray[3]);
+
+    if (isNaN(extraOp)) {
       $screen.text('Error');
+
       return;
     }
-    if (extraOp2 === '-'| extraOp2 === 'X'| extraOp2 === '÷'| extraOp2 === '+') {
-      $screen.text('');
+    if (isNaN(extraOp2)) {
       $screen.text('Error');
+
       return;
     }
-    if (operatorDiv === '÷' && operandZero) {
-      $screen.text('');
-      $screen.text('Error');
-      return;
-    }
-    if (screenTextArray[2] === '+') {
-      const result = parseFloat(screenTextArray[1]) + parseFloat(screenTextArray[3]);
-      $screen.text(result);
-    }
-    if (screenTextArray[2] === '-') {
-      const result = parseFloat(screenTextArray[1]) - parseFloat(screenTextArray[3]);
-      $screen.text(result);
-    }
-    if (screenTextArray[2] === '÷') {
-      const result = parseFloat(screenTextArray[1]) / parseFloat(screenTextArray[3]);
-      $screen.text(result);
-    }
-    if (screenTextArray[2] === 'X') {
-      const result = parseFloat(screenTextArray[1]) * parseFloat(screenTextArray[3]);
-      $screen.text(result);
-    }
+
+    evaluate(firstOperand, secondOperand, operatorSymbol);
   });
 })();
